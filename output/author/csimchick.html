@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="generator" content="Pelican" />
+        <title>simchuck.github.io - CSimchick</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">simchuck.github.io</a></h1>
+                <nav><ul>
+                    <li><a href="/category/technology.html">Technology</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/using-the-linux-make-utility.html">Using the Linux `make` Utility</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2019-06-15T00:00:00-07:00">
+                Published: Sat 15 June 2019
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/csimchick.html">CSimchick</a>
+        </address>
+<p>In <a href="/category/technology.html">Technology</a>.</p>
+<p>tags: <a href="/tag/linux.html">linux</a> <a href="/tag/devops.html">devops</a> <a href="/tag/cli.html">cli</a> </p>
+</footer><!-- /.post-info --><h1>Using the Linux <code>make</code> Utility</h1>
+<p>The <code>make</code> utility in linux provides a way to define command line level
+instructions for creating various artifacts based on specified
+dependencies. Although this was originally developed (presumably) for
+managing the build process for computer code written in the <code>c</code>
+language, the tool is sufficiently general to be used for many similar
+tasks.</p>
+<p>The key element to effective use of <code>make</code> is the <code>Makefile</code>, which is a
+text file that includes instructions on the various targets, their
+dependencies, and the \"recipe\" for building the targets. By default,
+this file should be named as either <code>makefile</code> or <code>Makefile</code>, although
+command line arguments to the <code>make</code> utility can specify different
+files.</p>
+<p>Each <code>makefile</code> includes patterns of the following form:</p>
+<div class="highlight"><pre><span></span><code>&lt;target(s)&gt;: &lt;dependency(s)&gt;
+    &lt;recipe instructions...&gt;
+</code></pre></div>
+
+<p>Generally, the specified <code>target</code> is the name of a file that will be
+produced from the <code>recipe</code> instructions when the <code>make</code> utility is run
+and changes are detected in the <code>dependencies</code>. There can be multiple
+dependencies specified as space-separated file names. Similarly, the
+<code>recipe</code> can consist of multiple lines, each starting with a <code>tab</code>
+character by default.</p>
+<p>It is important to note, however, that each individual line in the
+<code>recipe</code> will be executed in the shell in its own process, so changes on
+earlier lines might not be create the desired effect. For instance, you
+cannot change the directory on one line, and then work from within this
+directory on the next line. To handle this issue, you can use all of the
+shell\'s syntax to create compound lines, for example, enclosing in
+parentheses, using a continuation character, etc.</p>
+<p>For example, if the <code>makefile</code> includes the following rule, which would
+update (or create) the file <code>makefile-changed.txt</code> whenever a change is
+detected in the <code>makefile</code>, you might be surprised to find that the
+updated file is <em>not</em> in the parent of the current directory, but rather
+in the current directory itself, and both <code>pwd</code> commands will output the
+location of this same directory.</p>
+<div class="highlight"><pre><span></span><code><span class="n">makefile</span><span class="o">-</span><span class="n">changed</span><span class="p">.</span><span class="nl">txt</span><span class="p">:</span><span class="w"> </span><span class="n">makefile</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@pwd</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@cd</span><span class="w"> </span><span class="p">..</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@touch</span><span class="w"> </span><span class="n">makefile</span><span class="o">-</span><span class="n">changed</span><span class="p">.</span><span class="n">txt</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@pwd</span><span class="w"></span>
+</code></pre></div>
+
+<p>By contrast, the following <code>makefile</code> would update the text file in the
+parent directory as was probably intended.</p>
+<div class="highlight"><pre><span></span><code><span class="n">makefile</span><span class="o">-</span><span class="n">changed</span><span class="p">.</span><span class="nl">txt</span><span class="p">:</span><span class="w"> </span><span class="n">makefile</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@pwd</span><span class="w"></span>
+<span class="w">    </span><span class="nv">@cd</span><span class="w"> </span><span class="p">..</span><span class="w"> </span><span class="p">;</span><span class="err">\</span><span class="w"></span>
+<span class="w">    </span><span class="n">touch</span><span class="w"> </span><span class="n">makefile</span><span class="o">-</span><span class="n">changed</span><span class="p">.</span><span class="n">txt</span><span class="w"> </span><span class="p">;</span><span class="err">\</span><span class="w"></span>
+<span class="w">    </span><span class="n">pwd</span><span class="w"></span>
+</code></pre></div>
+
+<p>A single <code>tab</code> character is required to precede each line in the recipe,
+however this is an unfortunate choice, since it is generally
+indistinguishable from a series of spaces. Alternately, you can include
+the <code>.RECIPEPREFIX</code> instruction in the <code>makefile</code> to specify a single
+character to use in place of the <code>tab</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="na">.RECIPEPREFIX</span> <span class="err">=</span> <span class="p">:</span>   <span class="c1"># This sets the recipe prefix character to a colon (`:`)</span>
+
+<span class="nl">makefile-changed.txt:</span> <span class="nf">makefile</span>
+<span class="err">:@</span><span class="nf">pwd</span> <span class="c1">;\</span>
+<span class="err">:</span><span class="nf">cd</span> <span class="no">..</span> <span class="err">&amp;&amp;</span> <span class="no">touch</span> <span class="no">makefile-changed.txt</span> <span class="err">&amp;&amp;</span> <span class="no">pwd</span>
+</code></pre></div>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://getpelican.com/">Pelican</a></li>
+                            <li><a href="https://www.python.org/">Python.org</a></li>
+                            <li><a href="https://palletsprojects.com/p/jinja/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="https://getpelican.com/">Pelican</a>, which takes great advantage of <a href="https://www.python.org/">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="https://www.smashingmagazine.com/2009/08/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
